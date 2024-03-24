@@ -34,7 +34,11 @@ export default function LearnMore() {
           alt="Sound Icon"
         />
       </h2>
-      <img style={{width:200}} src="assets/images/freudBio.jpg" alt="Sigmund Freud"/>
+      <img
+        style={{ width: 200 }}
+        src="assets/images/freudBio.jpg"
+        alt="Sigmund Freud"
+      />
       <p>
         Sigmund Freud was an Austrian neurologist and the founder of
         psychoanalysis.
@@ -44,12 +48,16 @@ export default function LearnMore() {
         Floyd Mayweather Jr.
         <img
           // onClick={floydPron}
-          style={{width:20}}
+          style={{ width: 20 }}
           src="assets/images/soundIcon.png"
           alt="Sound Icon"
         />
       </h2>
-      <img style={{width:200}} src="assets/images/floydBio.jpg" alt="Floyd Mayweather" />
+      <img
+        style={{ width: 200 }}
+        src="assets/images/floydBio.jpg"
+        alt="Floyd Mayweather"
+      />
       <p>
         Floyd Mayweather is an American boxing promoter and former boxer with a
         record of 26 consecutive wins in world title fights.
