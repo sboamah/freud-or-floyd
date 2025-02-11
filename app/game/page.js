@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import quotesFile from "./quotes.json";
 import Link from "next/link";
 
@@ -12,32 +12,30 @@ function Button({ name, onAnswer, alert }) {
 }
 export default function Page() {
   const quotes = quotesFile.quotes;
-  const [index, setIndex] = useState(0);
-  const [highScoreMessage, setHighScoreMessage] = useState("");
   const maxIndex = 30;
   const minIndex = 0;
   const maxNumberOfQuotes = 5;
-  const ranNumbers = (max, min, count) => {
-    if (count > max - min + 1) {
-      throw new Error(
-        "Cannot generate more unique numbers than the range allows"
-      );
-    }
-    const numbers = [];
-    while (numbers.length < count) {
-      const randomNumber = Math.floor(Math.random() * (max - min + 1)) + min;
-      if (!numbers.includes(randomNumber)) {
-        numbers.push(randomNumber);
-      }
-    }
-    return numbers;
-  };
-
-  const [currentQuote, setCurrentQuote] = useState(
-    quotes[ranNumbers(maxIndex, minIndex, maxNumberOfQuotes)[index]]
-  );
+  const [index, setIndex] = useState(0);
+  const [highScoreMessage, setHighScoreMessage] = useState("");
+  const [randomNumbers, setRandomNumbers] = useState([]);
+  const [currentQuote, setCurrentQuote] = useState("");
   const [alert, setAlert] = useState("");
   const [score, setScore] = useState(0);
+
+  useEffect(() => {
+    const numbers = [];
+    while (numbers.length < 5) {
+      const ranNum = Math.floor(Math.random() * (maxIndex - minIndex + 1));
+      if (!numbers.includes(ranNum)) {
+        numbers.push(ranNum);
+      }
+    }
+    setRandomNumbers(numbers);
+  }, []);
+
+  useEffect(() => {
+    setCurrentQuote(quotes[randomNumbers[index]]);
+  }, [index, randomNumbers, quotes]);
 
   const checkAnswer = (name, currentQuote) => {
     if (currentQuote.author.includes(name)) {
@@ -46,11 +44,12 @@ export default function Page() {
     } else {
       setAlert("Wrong! the answer is " + currentQuote.author + ".");
     }
+    getScore();
   };
   const getScore = () => {
-    if (typeof Storage !== "undefined") {
+    if (index === maxNumberOfQuotes - 1) {
       if (localStorage.getItem("High Score") > 100) {
-        localStorage.setItem("highScore", 100);
+        localStorage.setItem("High Score", 100);
       }
       if (localStorage.getItem("High Score") !== null) {
         setHighScoreMessage(
@@ -69,21 +68,17 @@ export default function Page() {
   };
 
   const next = () => {
-    if (index === maxNumberOfQuotes - 1) {
-      localStorage.setItem("Score", score);
-      if (score > localStorage.getItem("High Score")) {
-        localStorage.setItem("High Score", score);
-      }
-    }
-    if (index < maxNumberOfQuotes) {
+    if (index < maxNumberOfQuotes - 1) {
       setIndex((prevIndex) => prevIndex + 1);
       setAlert("");
-      setCurrentQuote(
-        quotes[ranNumbers(maxIndex, minIndex, maxNumberOfQuotes)[index]]
-      );
-    } else {
-      getScore();
     }
+    if (index === maxNumberOfQuotes - 1) {
+      localStorage.setItem("Score", score);
+      if (score > localStorage.getItem("highScore")) {
+        localStorage.setItem("highScore", score);
+      }
+    }
+   
   };
 
   return (
@@ -94,9 +89,13 @@ export default function Page() {
           Guess if the quote is from the famed philosopher or the brash boxer.
         </p>
 
-        <h3 id="quote">
-          {index + 1}. {currentQuote.quote}
-        </h3>
+        {randomNumbers.length > 0 && currentQuote ? (
+          <h3 id="quote">
+            {index + 1}. {currentQuote.quote}
+          </h3>
+        ) : (
+          <h3>Loading...</h3>
+        )}
         <h4 id="alert">{alert}</h4>
         <p id="high-score">{highScoreMessage}</p>
         <div className="flex justify-between">
@@ -112,14 +111,14 @@ export default function Page() {
               alert={alert}
             />
           </div>
-          {index < maxNumberOfQuotes ? (
+          {index === maxNumberOfQuotes - 1 && alert ? (
+            <Link href="/" rel="noopener noreferrer">
+              Play Again
+            </Link>
+          ) : (
             <button name="Next" id="next" onClick={next} disabled={!alert}>
               Next →
             </button>
-          ) : (
-            <Link href="/" rel="noopener noreferrer">
-              Go to Home
-            </Link>
           )}
         </div>
       </div>
