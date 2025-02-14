@@ -3,9 +3,14 @@ import { useState, useEffect } from "react";
 import quotesFile from "./quotes.json";
 import Link from "next/link";
 
-function Button({ name, onAnswer, alert }) {
+function Button({ name, onAnswer, feedback }) {
   return (
-    <button id={name} onClick={onAnswer} disabled={alert}>
+    <button
+      className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 enabled:hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
+      id={name}
+      onClick={onAnswer}
+      disabled={feedback}
+    >
       {name}
     </button>
   );
@@ -19,7 +24,7 @@ export default function Page() {
   const [highScoreMessage, setHighScoreMessage] = useState("");
   const [randomNumbers, setRandomNumbers] = useState([]);
   const [currentQuote, setCurrentQuote] = useState("");
-  const [alert, setAlert] = useState("");
+  const [feedback, setFeedback] = useState("");
   const [score, setScore] = useState(0);
 
   useEffect(() => {
@@ -37,17 +42,20 @@ export default function Page() {
     setCurrentQuote(quotes[randomNumbers[index]]);
   }, [index, randomNumbers, quotes]);
 
+  useEffect(() => {
+    getScore();
+  })
+
   const checkAnswer = (name, currentQuote) => {
     if (currentQuote.author.includes(name)) {
-      setAlert("Correct! The answer is " + currentQuote.author + ".");
-      setScore(score + 20);
+      setFeedback("Correct! The answer is " + currentQuote.author + ".");
+      setScore(newScore => newScore + 20);
     } else {
-      setAlert("Wrong! the answer is " + currentQuote.author + ".");
+      setFeedback("Wrong! The answer is " + currentQuote.author + ".");
     }
-    getScore();
   };
   const getScore = () => {
-    if (index === maxNumberOfQuotes - 1) {
+    if (index === maxNumberOfQuotes - 1 && feedback.length) {
       if (localStorage.getItem("High Score") > 100) {
         localStorage.setItem("High Score", 100);
       }
@@ -70,7 +78,7 @@ export default function Page() {
   const next = () => {
     if (index < maxNumberOfQuotes - 1) {
       setIndex((prevIndex) => prevIndex + 1);
-      setAlert("");
+      setFeedback("");
     }
     if (index === maxNumberOfQuotes - 1) {
       localStorage.setItem("Score", score);
@@ -78,7 +86,6 @@ export default function Page() {
         localStorage.setItem("highScore", score);
       }
     }
-   
   };
 
   return (
@@ -96,28 +103,81 @@ export default function Page() {
         ) : (
           <h3>Loading...</h3>
         )}
-        <h4 id="alert">{alert}</h4>
+        <div className="flex gap-2" id="feedback">
+          {feedback.includes("Correct") && (
+            <>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="rgb(0,130,54)"
+                className="size-6"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="m4.5 12.75 6 6 9-13.5"
+                />
+              </svg>
+              <h4 className="text-green-700">{feedback}</h4>
+            </>
+          )}
+          {feedback.includes("Wrong") && (
+            <>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="rgb(193,0,7)"
+                className="size-6"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M6 18 18 6M6 6l12 12"
+                />
+              </svg>
+              <h4 className="text-red-700">{feedback}</h4>
+            </>
+          )}
+        </div>
         <p id="high-score">{highScoreMessage}</p>
-        <div className="flex justify-between">
-          <div className="flex gap-4">
+        <div className="flex gap-2 justify-between">
+          <div className="flex gap-2">
             <Button
               name="Freud"
               onAnswer={() => checkAnswer("Freud", currentQuote)}
-              alert={alert}
+              feedback={feedback}
             />
             <Button
               name="Floyd"
               onAnswer={() => checkAnswer("Floyd", currentQuote)}
-              alert={alert}
+              feedback={feedback}
             />
           </div>
-          {index === maxNumberOfQuotes - 1 && alert ? (
+          {index === maxNumberOfQuotes - 1 && feedback ? (
             <Link href="/" rel="noopener noreferrer">
               Play Again
             </Link>
           ) : (
-            <button name="Next" id="next" onClick={next} disabled={!alert}>
-              Next →
+            <button className="flex gap-2 rounded-full border border-solid border-transparent items-center justify-center bg-amber-200 enabled:hover:bg-amber-100 text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5" name="Next" id="next" onClick={next} disabled={!feedback}>
+              Next
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="size-6"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3"
+                />
+              </svg>
             </button>
           )}
         </div>
